@@ -6,7 +6,7 @@ class MainForm(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Joki Rank MLBB")
-        self.geometry("800x600")
+        self.geometry("600x700")
         
         # Membuat label judul
         self.title_label = tk.Label(self, text="Joki Rank MLBB", font=("Arial", 16, "bold"))
@@ -65,6 +65,29 @@ class MainForm(tk.Tk):
 
         # List untuk menyimpan histori pembelian
         self.purchase_history = []
+        
+        # Menambahkan daftar harga ke dalam Treeview
+        self.price_treeview = ttk.Treeview(self, columns=["Tier", "Harga"], show="headings")
+        self.price_treeview.column("Tier", width=100)
+        self.price_treeview.column("Harga", width=100)
+        self.price_treeview.heading("Tier", text="Tier")
+        self.price_treeview.heading("Harga", text="Harga")
+        self.price_treeview.grid(row=9, column=0, columnspan=2, padx=20, pady=10)
+        
+        # Panggil metode add_price_list untuk mengisi Treeview
+        self.add_price_list()
+
+    def add_price_list(self):
+        # Menambahkan daftar harga ke dalam Treeview
+        prices = {
+            "Grandmaster": 6000,
+            "Epic": 7000,
+            "Legend": 8000,
+            "Mythic": 9000
+        }
+
+        for tier, price in prices.items():
+            self.price_treeview.insert("", tk.END, values=(tier, price))
 
     @property
     def tier(self):
@@ -111,23 +134,33 @@ class MainForm(tk.Tk):
         result = self.result_text_box.get()
         payment_method = self.payment_method_var.get()
         if result != "":
-            # Mengganti pernyataan print berikut dengan kode pembayaran Anda
-            self.purchase_history.append(f"Total Harga: {result}, Metode Pembayaran: {payment_method}")
-            print(f"Processing payment: {result}")
+            # Menampilkan dialog konfirmasi pembayaran
+            confirm_message = f"Apakah Anda yakin ingin melakukan pembayaran sebesar Rp {result} " \
+                              f"dengan metode pembayaran {payment_method}?"
+            confirm = messagebox.askyesno("Konfirmasi Pembayaran", confirm_message)
+            if confirm:
+                # Menambahkan histori pembelian ke dalam daftar histori
+                purchase_info = f"Tier: {self.tier_combo_box.get()}, Target Bintang: {self.target_var.get()}, " \
+                                f"Metode Pembayaran: {payment_method}, Harga: {result}"
+                self.purchase_history.append(purchase_info)
 
-            # Menampilkan notifikasi setelah pembayaran berhasil
-            messagebox.showinfo("Notification", "Payment Successful!")
-            self.update_purchase_history()
+                # Menampilkan histori pembelian di kotak teks
+                self.purchase_history_text_box.configure(state="normal")
+                self.purchase_history_text_box.insert(tk.END, purchase_info + "\n")
+                self.purchase_history_text_box.configure(state="disabled")
+
+                # Mengosongkan nilai tier, target, dan total harga
+                self.tier_combo_box.set("")
+                self.target_var.set("1")
+                self.result_text_box.configure(state="normal")
+                self.result_text_box.delete(0, tk.END)
+                self.result_text_box.configure(state="readonly")
+
+                # Menampilkan pesan pembayaran sukses
+                messagebox.showinfo("Pembayaran Berhasil", "Pembayaran telah berhasil.")
         else:
-            messagebox.showwarning("Warning", "No amount to pay.")
-
-    def update_purchase_history(self):
-        # Mengupdate tampilan histori pembelian
-        self.purchase_history_text_box.configure(state="normal")
-        self.purchase_history_text_box.delete("1.0", tk.END)
-        for purchase in self.purchase_history:
-            self.purchase_history_text_box.insert(tk.END, f"{purchase}\n")
-        self.purchase_history_text_box.configure(state="disabled")
+            # Menampilkan pesan kesalahan jika total harga belum dihitung
+            messagebox.showerror("Kesalahan", "Mohon hitung total harga terlebih dahulu.")
 
     def exit_loop(self):
         self.destroy()
