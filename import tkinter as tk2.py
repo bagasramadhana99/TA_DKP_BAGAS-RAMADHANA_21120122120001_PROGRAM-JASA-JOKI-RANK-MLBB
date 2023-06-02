@@ -98,11 +98,11 @@ class MainForm(tk.Tk):
         self._tier = value
 
     @property
-    def target(self):
+    def getter(self):
         return self._target
 
-    @target.setter
-    def target(self, value):
+    @getter.setter
+    def getter(self, value):
         self._target = value
 
     def calculate_price(self):
@@ -118,9 +118,6 @@ class MainForm(tk.Tk):
             result = 8000
         elif selected_tier == "Mythic":
             result = 9000
-        else:
-            result = -1  # Pilihan tidak valid
-
         result *= int(selected_target)
 
         # Menampilkan hasil perhitungan di kotak teks
